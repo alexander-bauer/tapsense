@@ -9,37 +9,35 @@ import pyaudio
 import struct
 import math
 
-INITIAL_TAP_THRESHOLD = 0.30
+INITIAL_TAP_THRESHOLD = 0.40
 FORMAT = pyaudio.paInt16 
 SHORT_NORMALIZE = (1.0/32768.0)
 CHANNELS = 2
 RATE = 44100  
 INPUT_BLOCK_TIME = 0.05
 INPUT_FRAMES_PER_BLOCK = int(RATE*INPUT_BLOCK_TIME)
-# If we get this many noisy blocks in a row, increase the threshold.
-OVERSENSITIVE = 15.0/INPUT_BLOCK_TIME                    
-# If we get this many quiet blocks in a row, decrease the threshold.
-UNDERSENSITIVE = 120.0/INPUT_BLOCK_TIME 
-# If the noise was longer than this many blocks, it's not a 'tap'.
+
+# Number of blocks to wait before adjusting the sensitivity.
+OVERSENSITIVE = 15.0/INPUT_BLOCK_TIME
+UNDERSENSITIVE = 120.0/INPUT_BLOCK_TIME
+
+# Ignore sustained noises.
 MAX_TAP_BLOCKS = 0.15/INPUT_BLOCK_TIME
 
 def get_rms( block ):
-    # RMS amplitude is defined as the square root of the 
-    # mean over time of the square of the amplitude.
-    # so we need to convert this string of bytes into 
-    # a string of 16-bit samples...
+    # RMS amplitude is defined as the square root of the mean over
+    # time of the square of the amplitude. So we need to convert this
+    # string of bytes into a string of 16-bit samples...
 
-    # we will get one short out for each 
-    # two chars in the string.
+    # We will get one short out for each two chars in the string.
     count = len(block)/2
     format = "%dh"%(count)
     shorts = struct.unpack( format, block )
 
-    # iterate over the block.
+    # Iterate over the block.
     sum_squares = 0.0
     for sample in shorts:
-        # sample is a signed short in +/- 32768. 
-        # normalize it to 1.0
+        # Sample is a signed short in +/- 32768. Normalize it to 1.0.
         n = sample * SHORT_NORMALIZE
         sum_squares += n*n
 
@@ -93,7 +91,7 @@ class TapTester(object):
         try:
             block = self.stream.read(INPUT_FRAMES_PER_BLOCK)
         except IOError, e:
-            # dammit. 
+            # Damn.
             self.errorcount += 1
             print( "(%d) Error recording: %s"%(self.errorcount,e) )
             self.noisycount = 1
@@ -101,21 +99,20 @@ class TapTester(object):
 
         amplitude = get_rms( block )
         if amplitude > self.tap_threshold:
-            # noisy block
+            # This is a noisy block
             self.quietcount = 0
             self.noisycount += 1
             if self.noisycount > OVERSENSITIVE:
-                # turn down the sensitivity
+                # Turn down the sensitivity.
                 self.tap_threshold *= 1.1
         else:            
-            # quiet block.
-
+            # This is a quiet block.
             if 1 <= self.noisycount <= MAX_TAP_BLOCKS:
                 self.tapDetected()
             self.noisycount = 0
             self.quietcount += 1
             if self.quietcount > UNDERSENSITIVE:
-                # turn up the sensitivity
+                # Turn up the sensitivity.
                 self.tap_threshold *= 0.9
 
 if __name__ == "__main__":
