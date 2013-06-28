@@ -7,6 +7,10 @@ import pyaudio
 import struct
 import math
 import settings
+from time import time
+
+# seconds
+DOUBLE_TAP_THRESHOLD = 0.2
 
 FORMAT = pyaudio.paInt16 
 SHORT_NORMALIZE = (1.0/32768.0)
@@ -45,6 +49,8 @@ class TapTester(object):
         self.noisycount = MAX_TAP_BLOCKS+1 
         self.quietcount = 0 
         self.errorcount = 0
+        self.lasttap = 0
+        self.queuedtap = False
 
     def stop(self):
         self.stream.close()
@@ -97,7 +103,24 @@ class TapTester(object):
             self.noisycount += 1
         else:            
             # This is a quiet block.
+            now = time()
+            interval = now - self.lasttap
+
             if 1 <= self.noisycount <= MAX_TAP_BLOCKS:
+                # There was a tap
+                if self.queuedtap and interval <= DOUBLE_TAP_THRESHOLD:
+                    # There is a tap queued, and another came in
+                    # So issue a double-tap
+                    self.onDoubleTap()
+                    self.queuedtap = False
+                else:
+                    # There wasn't a queued tap yet
+                    self.queuedtap = True
+                self.lasttap = now
+            elif self.queuedtap and interval > DOUBLE_TAP_THRESHOLD:
+                # There is a tap queued, and no more taps came in
+                self.queuedtap = False
                 self.onTap()
+            
             self.noisycount = 0
             self.quietcount += 1

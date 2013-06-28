@@ -20,3 +20,7 @@ print ctlpath
 def onTap():
     with open(ctlpath, "w") as ctl:
         ctl.write("p")
+
+def onDoubleTap():
+    with open(ctlpath, "w") as ctl:
+        ctl.write("n")

@@ -24,8 +24,16 @@ else:
     # Use this simple function as a default.
     def onTap():
         print 'Tap!'
+
     tt.onTap = onTap
 
+# Same for double-tap
+if callable(settings.onDoubleTap):
+    tt.onDoubleTap = settings.onDoubleTap
+else:
+    def onDoubleTap():
+        print 'Double-tap!'
+    tt.onDoubleTap = onDoubleTap
 
 # Listen forever, or until terminated by SIGINT.
 while True:
