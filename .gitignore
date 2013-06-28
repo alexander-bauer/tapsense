@@ -1,5 +1,8 @@
 *.py[cod]
 
+# Settings file
+settings.py
+
 # Editor backups and temporary files
 *~
 *#*
