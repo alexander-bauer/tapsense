@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Composed almost entirely by Russell Borogove from Stack Overflow:
 # http://stackoverflow.com/a/4160733.
 
@@ -84,9 +82,8 @@ class TapTester(object):
 
         return stream
 
-    def tapDetected(self):
-        print "Tap!"
-
+    # listen detects the noisiness of a sample of input from the
+    # audiostream, and calls 'self.onTap()' if it detects a tap.
     def listen(self):
         try:
             block = self.stream.read(INPUT_FRAMES_PER_BLOCK)
@@ -108,7 +105,7 @@ class TapTester(object):
         else:            
             # This is a quiet block.
             if 1 <= self.noisycount <= MAX_TAP_BLOCKS:
-                self.tapDetected()
+                self.onTap()
             self.noisycount = 0
             self.quietcount += 1
             if self.quietcount > UNDERSENSITIVE:
