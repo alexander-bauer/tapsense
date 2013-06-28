@@ -1,4 +1,7 @@
 # Set variables here.
 
+# Tap detection threshold (lower is more sensitive)
+threshold = 0.30
+
 # Import extension(s) to the current namespace.
 #from pianobar import *

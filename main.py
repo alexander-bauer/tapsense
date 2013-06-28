@@ -3,8 +3,8 @@
 import signal
 import sys
 
-import taptester
 import settings
+import taptester
 
 # Listen for SIGINT and exit gracefully.
 def sigint_handler(signal, frame):
