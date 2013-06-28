@@ -1,0 +1,2 @@
+def onTap():
+    print 'Tap!'
