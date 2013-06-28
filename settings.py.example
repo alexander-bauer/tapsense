@@ -1,2 +1,4 @@
-def onTap():
-    print 'Tap!'
+# Set variables here.
+
+# Import extension(s) to the current namespace.
+#from pianobar import *
