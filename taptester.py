@@ -15,10 +15,6 @@ RATE = 44100
 INPUT_BLOCK_TIME = 0.05
 INPUT_FRAMES_PER_BLOCK = int(RATE*INPUT_BLOCK_TIME)
 
-# Number of blocks to wait before adjusting the sensitivity.
-OVERSENSITIVE = 15.0/INPUT_BLOCK_TIME
-UNDERSENSITIVE = 120.0/INPUT_BLOCK_TIME
-
 # Ignore sustained noises.
 MAX_TAP_BLOCKS = 0.15/INPUT_BLOCK_TIME
 
@@ -96,24 +92,12 @@ class TapTester(object):
 
         amplitude = get_rms( block )
         if amplitude > self.tap_threshold:
-            # This is a noisy block
+            # This is a noisy block.
             self.quietcount = 0
             self.noisycount += 1
-            if self.noisycount > OVERSENSITIVE:
-                # Turn down the sensitivity.
-                self.tap_threshold *= 1.1
         else:            
             # This is a quiet block.
             if 1 <= self.noisycount <= MAX_TAP_BLOCKS:
                 self.onTap()
             self.noisycount = 0
             self.quietcount += 1
-            if self.quietcount > UNDERSENSITIVE:
-                # Turn up the sensitivity.
-                self.tap_threshold *= 0.9
-
-if __name__ == "__main__":
-    tt = TapTester()
-
-    for i in range(1000):
-        tt.listen()
